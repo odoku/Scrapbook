@@ -1,0 +1,7 @@
+parsel==1.2.0
+six==1.10.0
+
+# Dev
+flake8==3.4.1
+pytest==3.2.2
+pytest-mock==1.6.3
