@@ -8,6 +8,8 @@ import pytest
 import six
 
 from scrapbook.parsers import (
+    All,
+    First,
     ParseDefinitionList,
     ParseList,
     ParseTable,
@@ -22,6 +24,18 @@ def load_html(filepath):
     filepath = os.path.join(html_dir, filepath)
     with open(filepath) as fp:
         return six.u(fp.read())
+
+
+class TestFirst(object):
+    def test_(self):
+        selector = Selector('<html><body><p>aaa<br>bbb<br>ccc</p></body></html>')
+        assert 'aaa' == First()(selector.xpath('//html/body/p/text()'))
+
+
+class TestAll(object):
+    def test_(self):
+        selector = Selector('<html><body><p>aaa<br>bbb<br>ccc</p></body></html>')
+        assert ['aaa', 'bbb', 'ccc'] == All()(selector.xpath('//html/body/p/text()'))
 
 
 class TestParseTable(object):

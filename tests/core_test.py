@@ -2,14 +2,12 @@
 from __future__ import absolute_import, print_function, unicode_literals
 
 from parsel import Selector
-import pytest
 
 from scrapbook import (
     BaseElement,
     Element,
     Content,
 )
-from scrapbook.filters import take_first
 
 
 class TestBaseElement(object):
@@ -73,8 +71,8 @@ class TestContent(object):
         html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
         class A(Content):
-            el1 = Element(xpath='/html/body/p/a/text()', filter=take_first)
-            el2 = Element(xpath='/html/body/p/a/@href', filter=take_first)
+            el1 = Element(xpath='/html/body/p/a/text()')
+            el2 = Element(xpath='/html/body/p/a/@href')
 
         assert A().parse(html) == {
             'el1': 'Link',
@@ -100,4 +98,4 @@ class TestElement(object):
 
     def test_parse(self):
         html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
-        assert Element(xpath='/html/body/p/a/text()').parse(html) == ['Link']
+        assert Element(xpath='/html/body/p/a/text()').parse(html) == 'Link'

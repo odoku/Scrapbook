@@ -5,7 +5,7 @@ import six
 from parsel import Selector
 
 from .filters import through
-from .parsers import extract
+from .parsers import First
 from .utils import merge_dict
 
 
@@ -107,7 +107,7 @@ class Content(BaseElement):
 
 
 class Element(BaseElement):
-    parser = extract
+    parser = First()
 
     def __init__(self, *args, **kwargs):
         parser = kwargs.pop('parser', None)
