@@ -56,17 +56,6 @@ class BaseElement(object):
         return selector.xpath('.')
 
     def parse(self, html):
-        selector = self.get_selector(html)
-        if len(selector) == 0:
-            return None
-
-        value = self._parse(selector)
-        for filter in self.get_filter():
-            value = filter(value)
-
-        return value
-
-    def _parse(self, selector):
         raise NotImplementedError()
 
 
@@ -91,6 +80,10 @@ class ContentMeta(type):
 
 @six.add_metaclass(ContentMeta)
 class Content(BaseElement):
+    def __init__(self, *args, **kwargs):
+        self.many = kwargs.pop('many', False)
+        super(Content, self).__init__(*args, **kwargs)
+
     def _parse(self, selector):
         return {
             name: getattr(self, name).parse(selector)
@@ -98,20 +91,37 @@ class Content(BaseElement):
         }
 
     def parse(self, html, object=None):
-        data = super(Content, self).parse(html)
-        if object is None:
-            return data
+        selector = self.get_selector(html)
+        if len(selector) == 0:
+            return None
 
+        if self.many:
+            value = [self._parse(s) for s in selector]
+        else:
+            value = self._parse(selector)
+
+        for filter in self.get_filter():
+            value = filter(value)
+
+        if object is None:
+            return value
+
+        if isinstance(value, (list, tuple)):
+            return [self.map_value(v, object) for v in value]
+
+        return self.map_value(value, object)
+
+    def map_value(self, value, object):
         if inspect.isclass(object):
             object = object()
 
         if isinstance(object, MutableMapping):
-            for key, value in data.items():
-                object[key] = value
+            for k, v in value.items():
+                object[k] = v
             return object
 
-        for key, value in data.items():
-            setattr(object, key, value)
+        for k, v in value.items():
+            setattr(object, k, v)
         return object
 
     @classmethod
@@ -134,3 +144,14 @@ class Element(BaseElement):
 
     def _parse(self, selector):
         return self.get_parser()(selector)
+
+    def parse(self, html):
+        selector = self.get_selector(html)
+        if len(selector) == 0:
+            return None
+
+        value = self._parse(selector)
+        for filter in self.get_filter():
+            value = filter(value)
+
+        return value
