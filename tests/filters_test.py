@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import pytest
 
@@ -50,11 +50,24 @@ class TestMap(object):
         fn2.assert_has_calls([mocker.call(2), mocker.call(4)], any_order=True)
         assert [20, 40] == result
 
+    def test_with_none(self, mocker):
+        fn1 = mocker.Mock(name='fn1', side_effect=lambda v: v)
+        fn2 = mocker.Mock(name='fn2', side_effect=lambda v: v)
+
+        result = Map(fn1, fn2)(None)
+
+        fn1.assert_has_calls([mocker.call(None)], any_order=True)
+        fn2.assert_has_calls([mocker.call(None)], any_order=True)
+        assert result is None
+
 
 class TestThrough(object):
     def test_(self):
         value = 100
         assert value == through(value)
+
+    def test_with_none(self):
+        assert through(None) is None
 
 
 class TestTakeFirst(object):
@@ -64,6 +77,9 @@ class TestTakeFirst(object):
     def test_with_list_include_empty_value(self):
         assert 0 == take_first([None, '', 0, 1])
 
+    def test_with_none(self):
+        assert take_first(None) is None
+
 
 class TestCleanText(object):
     @pytest.mark.parametrize(['text', 'result'], [
@@ -72,6 +88,7 @@ class TestCleanText(object):
         ('&amp;', '&'),
         ('aa       bb', 'aa bb'),
         ('<p>  aaa  &amp;  bbb  </p>', 'aaa & bbb'),
+        (None, None),
     ])
     def test_(self, text, result):
         assert result == clean_text(text)
@@ -81,12 +98,14 @@ class TestEquals(object):
     def test_(self):
         assert Equals('AAA')('AAA')
         assert not Equals('AAA')('AAABBBCCC')
+        assert not Equals('AAA')(None)
 
 
 class TestContains(object):
     def test_(self):
         assert Contains('BBB')('AAABBBCCC')
         assert not Contains('DDD')('AAABBBCCC')
+        assert not Contains('AAA')(None)
 
 
 class TestFetch(object):
@@ -104,6 +123,11 @@ class TestFetch(object):
         pattern = r'(?P<type>\w+): (?P<count>\d+)'
         result = Fetch(pattern)('Cat: 10, Dog: 20')
         assert {'type': 'Cat', 'count': '10'} == result
+
+    def test_fetch_with_none(self):
+        pattern = r'(?P<type>\w+): (?P<count>\d+)'
+        result = Fetch(pattern)(None)
+        assert result is None
 
     def test_fetch_all(self):
         pattern = r'\d+'
@@ -123,6 +147,11 @@ class TestFetch(object):
             {'type': 'Dog', 'count': '20'},
         ] == result
 
+    def test_fetch_all_with_none(self):
+        pattern = r'(?P<type>\w+): (?P<count>\d+)'
+        result = Fetch(pattern, all=True)(None)
+        assert result is None
+
 
 class TestReplace(object):
     def test_(self):
@@ -131,15 +160,27 @@ class TestReplace(object):
         result = Replace(pattern, replace)('AAAAAABBBAAAA')
         assert 'BBBBB' == result
 
+    def test_with_none(self):
+        pattern = r'A+'
+        replace = 'B'
+        result = Replace(pattern, replace)(None)
+        assert result is None
+
 
 class TestJoin(object):
     def test_(self):
         assert 'A,B,C' == Join(',')(['A', 'B', 'C'])
 
+    def test_with_none(self):
+        assert Join(',')(None) is None
+
 
 class TestNormalize(object):
     def test_(self):
-        assert '12AB&%' == Normalize()('１２ＡＢ＆％')
+        assert '12AB&%' == Normalize()(u'１２ＡＢ＆％')
+
+    def test_with_none(self):
+        assert Normalize()(None) is None
 
 
 class TestRenameKey(object):
@@ -147,6 +188,11 @@ class TestRenameKey(object):
         name_map = {'AAA': 'XXX', 'BBB': 'YYY'}
         result = RenameKey(name_map)({'AAA': '10', 'BBB': '20'})
         assert {'XXX': '10', 'YYY': '20'} == result
+
+    def test_with_none(self):
+        name_map = {'AAA': 'XXX', 'BBB': 'YYY'}
+        result = RenameKey(name_map)(None)
+        assert result is None
 
 
 class TestFilterDict(object):
@@ -159,3 +205,8 @@ class TestFilterDict(object):
         keys = ['AAA']
         result = FilterDict(keys, ignore=True)({'AAA': '10', 'BBB': '20'})
         assert {'BBB': '20'} == result
+
+    def test_with_none(self):
+        keys = ['AAA']
+        result = FilterDict(keys)(None)
+        assert result is None

@@ -7,20 +7,17 @@ You can handle multiple Elements at once.
 .. code-block:: python
 
     from scrapbook import Element, Content
-    from scrapbook.filters import take_first
     import requests
 
 
     class Twitter(Content):
         username = Element(
             xpath='//*[@id="page-container"]/div[2]/div/div'
-                '/div[1]/div/div/div/div[1]/h2/a/span/b/text()',
-            filter=take_first,
+                  '/div[1]/div/div/div/div[1]/h2/a/span/b/text()',
         )
         screen_name = Element(
             xpath='//*[@id="page-container"]/div[2]/div/div/'
-                'div[1]/div/div/div/div[1]/h1/a',
-            filter=take_first,
+                  'div[1]/div/div/div/div[1]/h1/a',
         )
 
 
@@ -59,14 +56,8 @@ Content can be nested.
 .. code-block:: python
 
     class Profile(Content):
-        username = Element(
-            xpath='./path/to/username/text()',
-            filter=take_first,
-        )
-        screen_name = Element(
-            xpath='./path/to/screen_name/text()',
-            filter=take_first,
-        )
+        username = Element(xpath='./path/to/username/text()')
+        screen_name = Element(xpath='./path/to/screen_name/text()')
 
     class Page(Content):
         profile = Profile(xpath='//*[@id="profile"]')
@@ -80,22 +71,13 @@ Content supports inheritance.
 .. code-block:: python
 
     class Common(Content):
-        title = Element(
-            xpath='/path/to/title/text()',
-            filter=take_first,
-        )
+        title = Element(xpath='/path/to/title/text()')
 
     class ProjectPage(Common):
-        name = Element(
-            xpath='/path/to/name/text()',
-            filter=take_first,
-        )
+        name = Element(xpath='/path/to/name/text()')
 
     class TeamPage(Common):
-        name = Element(
-            xpath='/path/to/name/text()',
-            filter=take_first,
-        )
+        name = Element(xpath='/path/to/name/text()')
 
 
 Arguments
@@ -117,10 +99,7 @@ For the included Element, the element of the specified xpath is passed.
 .. code-block:: python
 
     class Page(Content):
-        username = Element(
-            xpath='./span[1]/text()',
-            filter=take_first,
-        )
+        username = Element(xpath='./span[1]/text()')
 
     page = Page(xpath='//*[@id="profile"]')
     data = page.parse(html)
@@ -134,10 +113,7 @@ As with Element, multiple filters can be specified.
 .. code-block:: python
 
     class Page(Content):
-        username = Element(
-            xpath='./span[1]/text()',
-            filter=take_first,
-        )
+        username = Element(xpath='./span[1]/text()')
 
     def rename(value):
         alias = {'username': 'account'}
@@ -155,11 +131,57 @@ parse
 
 .. code-block:: python
 
-    parse(html: Union[str, parsel.Selector, parsel.SelectorList])
+    parse(
+        html: Union[str, parsel.Selector, parsel.SelectorList],
+        object: Optional[Any],
+    )
 
 Parse html.
 
 .. code-block:: python
 
-    el = Element(xpath='/html/body/p/text()')
-    data = el.parse()  # data is dict
+    class Page(Content):
+        content = Element(xpath='/html/body/p/text()')
+
+    html = '<html><body><p>Hello!</p></body></html>'
+    page = Page()
+    data = page.parse(html)  # {'content': 'Hello!'}
+
+Map the value to the object specified in the object argument.
+
+.. code-block:: python
+
+    instance = PageModel()
+    page = Page()
+    instance = page.parse(html, object=instance)
+
+
+Class Methods
+=====================================================================
+
+inline
+---------------------------------------------------------------------
+
+.. code-block:: python
+
+    inline(
+        xpath: str = None,
+        filter: Union[Callable, str, list[Union[Callable, str]] = scrapbook.filters.through,
+        **attrs: Dict[str, Any]
+    )
+
+Returns an instance of dynamically generated Content class.
+
+.. code-block:: python
+
+    class Page(Content):
+        content = Content.inline(
+            text=Element(xpath='/html/body/p/text()', filter='twice'),
+        )
+
+        def twice(self, value):
+            return value * 2
+
+    html = '<html><body><p>Hello!</p></body></html>'
+    page = Page()
+    data = page.parse(html)  # {'content': {'text': 'Hello!Hello!'}}

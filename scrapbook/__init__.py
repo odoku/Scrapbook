@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
+from collections import MutableMapping
+import inspect
 import six
 from parsel import Selector
 
 from .filters import through
-from .parsers import extract
+from .parsers import First
 from .utils import merge_dict
 
 
@@ -26,33 +28,26 @@ class BaseElement(object):
     def is_descriptor(self):
         return self.instance is not None
 
+    def get_function(self, fn):
+        if callable(fn):
+            return fn
+
+        method = getattr(self, six.text_type(fn), None)
+        if method and callable(method):
+            return method
+
+        if self.instance and hasattr(self.instance, 'get_function'):
+            return self.instance.get_function(fn)
+
+        raise ValueError('{} is not callable.'.format(fn))
+
     def get_filter(self):
         if not isinstance(self.filter, (list, tuple)):
             filters = [self.filter]
         else:
             filters = self.filter
 
-        if self.is_descriptor:
-            for i, filter in enumerate(filters):
-                if callable(filter):
-                    continue
-
-                func = getattr(self.instance, str(filter), None)
-                if not func:
-                    raise ValueError('{}.{} is not found.'.format(
-                        self.instance.__class__.__name__,
-                        filter,
-                    ))
-
-                if not callable(func):
-                    raise ValueError('{}.{} is not callable.'.format(
-                        self.instance.__class__.__name__,
-                        filter,
-                    ))
-
-                filters[i] = func
-
-        return filters
+        return [self.get_function(f) for f in filters]
 
     def get_selector(self, html):
         selector = Selector(text=html) if isinstance(html, str) else html
@@ -66,9 +61,6 @@ class BaseElement(object):
             return None
 
         value = self._parse(selector)
-        if value is None:
-            return None
-
         for filter in self.get_filter():
             value = filter(value)
 
@@ -82,17 +74,17 @@ class ContentMeta(type):
     def __new__(klass, name, bases, attrs):
         new_class = super(ContentMeta, klass).__new__(klass, name, bases, attrs)
 
-        fields = {
+        elements = {
             attr: getattr(new_class, attr)
             for attr in attrs
             if not attr.startswith('_') and isinstance(getattr(new_class, attr), BaseElement)
         }
 
         for base in bases:
-            if hasattr(base, 'fields'):
-                fields = merge_dict(base.fields, fields)
+            if hasattr(base, 'elements'):
+                elements = merge_dict(base.elements, elements)
 
-        new_class.fields = fields
+        new_class.elements = elements
 
         return new_class
 
@@ -102,12 +94,34 @@ class Content(BaseElement):
     def _parse(self, selector):
         return {
             name: getattr(self, name).parse(selector)
-            for name in self.fields
+            for name in self.elements
         }
+
+    def parse(self, html, object=None):
+        data = super(Content, self).parse(html)
+        if object is None:
+            return data
+
+        if inspect.isclass(object):
+            object = object()
+
+        if isinstance(object, MutableMapping):
+            for key, value in data.items():
+                object[key] = value
+            return object
+
+        for key, value in data.items():
+            setattr(object, key, value)
+        return object
+
+    @classmethod
+    def inline(base, xpath=None, filter=None, **attrs):
+        cls = type('InlineContent', (base,), attrs)
+        return cls(xpath, filter)
 
 
 class Element(BaseElement):
-    parser = extract
+    parser = First()
 
     def __init__(self, *args, **kwargs):
         parser = kwargs.pop('parser', None)
@@ -116,24 +130,7 @@ class Element(BaseElement):
         super(Element, self).__init__(*args, **kwargs)
 
     def get_parser(self):
-        if callable(self.parser):
-            return self.parser
-
-        if self.is_descriptor:
-            func = getattr(self.instance, str(self.parser), None)
-            if not func:
-                raise ValueError('{}.{} is not found.'.format(
-                    self.instance.__class__.__name__,
-                    self.parser,
-                ))
-            if not callable(func):
-                raise ValueError('{}.{} is not callable.'.format(
-                    self.instance.__class__.__name__,
-                    self.parser,
-                ))
-            return func
-
-        raise ValueError('{} is not callable.'.format(self.parser))
+        return self.get_function(self.parser)
 
     def _parse(self, selector):
         return self.get_parser()(selector)

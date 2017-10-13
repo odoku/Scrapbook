@@ -7,20 +7,17 @@ Scrapbook is simple scraping library.
 .. code-block:: python
 
     from scrapbook import Element, Content
-    from scrapbook.filters import take_first
     import requests
 
 
     class Twitter(Content):
         username = Element(
             xpath='//*[@id="page-container"]/div[2]/div/div'
-                '/div[1]/div/div/div/div[1]/h2/a/span/b/text()',
-            filter=take_first,
+                  '/div[1]/div/div/div/div[1]/h2/a/span/b/text()',
         )
         screen_name = Element(
             xpath='//*[@id="page-container"]/div[2]/div/div/'
-                'div[1]/div/div/div/div[1]/h1/a',
-            filter=take_first,
+                  'div[1]/div/div/div/div[1]/h1/a/text()',
         )
 
 
@@ -51,6 +48,6 @@ Page
     :maxdepth: 2
 
     element
-    element_group
+    content
     filters
     parsers

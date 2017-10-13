@@ -7,14 +7,12 @@ Get the element specified by xpath from HTML.
 .. code-block:: python
 
     from scrapbook import Element
-    from scrapbook.filters import take_first
     import requests
 
     response = requests.get('https://twitter.com/odoku')
     screen_name = Element(
         xpath='//*[@id="page-container"]/div[2]/div/div'
-            '/div[1]/div/div/div/div[1]/h2/a/span/b/text()',
-        filter=take_first,
+              '/div[1]/div/div/div/div[1]/h2/a/span/b/text()',
     )
     name = screen_name.parse(response.text)
 
@@ -29,7 +27,7 @@ Arguments
     Element(
         xpath: Optional[str] = None,
         filter: Union[Callable, str, list[Union[Callable, str]] = scrapbook.filters.through,
-        parser: Union[Callable, str] = scrapbook.parsers.extract,
+        parser: Union[Callable, str] = scrapbook.parsers.First(),
     )
 
 xpath
@@ -96,5 +94,6 @@ Parse html.
 
 .. code-block:: python
 
+    html = '<html><body><p>Hello!</p></body></html>'
     el = Element(xpath='/html/body/p/text()')
-    texts = el.parse()  # texts is list
+    text = el.parse()  # Hello!

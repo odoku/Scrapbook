@@ -1,10 +1,15 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 from .filters import clean_text
 
 
-class Extract(object):
+class First(object):
+    def __call__(self, selector):
+        return selector.extract_first()
+
+
+class All(object):
     def __call__(self, selector):
         return selector.extract()
 
@@ -73,6 +78,3 @@ class ParseDefinitionList(object):
             k: v if len(v) > 1 else v[0]
             for k, v in data.items()
         }
-
-
-extract = Extract()
