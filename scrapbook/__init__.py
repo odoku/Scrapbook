@@ -74,17 +74,17 @@ class ContentMeta(type):
     def __new__(klass, name, bases, attrs):
         new_class = super(ContentMeta, klass).__new__(klass, name, bases, attrs)
 
-        fields = {
+        elements = {
             attr: getattr(new_class, attr)
             for attr in attrs
             if not attr.startswith('_') and isinstance(getattr(new_class, attr), BaseElement)
         }
 
         for base in bases:
-            if hasattr(base, 'fields'):
-                fields = merge_dict(base.fields, fields)
+            if hasattr(base, 'elements'):
+                elements = merge_dict(base.elements, elements)
 
-        new_class.fields = fields
+        new_class.elements = elements
 
         return new_class
 
@@ -94,7 +94,7 @@ class Content(BaseElement):
     def _parse(self, selector):
         return {
             name: getattr(self, name).parse(selector)
-            for name in self.fields
+            for name in self.elements
         }
 
     def parse(self, html, object=None):

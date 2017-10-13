@@ -79,7 +79,7 @@ class TestContent(object):
         class D(A, C):
             el4 = Element()
 
-        assert D.fields == {
+        assert D().elements == {
             'el1': A.el1,
             'el2': B.el2,
             'el3': C.el3,
