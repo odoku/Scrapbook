@@ -20,11 +20,27 @@ class TestBaseElement(object):
 
         assert A().element.is_descriptor
 
+    def test_get_function(self, mocker):
+        def fn1(value):
+            return 1
+
+        class A(BaseElement):
+            element = BaseElement()
+
+            def fn2(self, value):
+                return 2
+
+        a = A()
+        assert fn1 == a.get_function(fn1)
+        assert a.fn2 == a.get_function('fn2')
+        assert fn1 == a.element.get_function(fn1)
+        assert a.fn2 == a.element.get_function('fn2')
+
     def test_get_filter(self, mocker):
         def fn1(value):
             return 1
 
-        class A(object):
+        class A(BaseElement):
             element1 = BaseElement(filter=fn1)
             element2 = BaseElement(filter='fn2')
             element3 = BaseElement(filter=[fn1, 'fn2'])
@@ -32,10 +48,11 @@ class TestBaseElement(object):
             def fn2(self, value):
                 return 2
 
-        a = A()
-        assert a.element1.get_filter() == [fn1]
-        assert a.element2.get_filter() == [a.fn2]
-        assert a.element3.get_filter() == [fn1, a.fn2]
+        a = A(filter='fn2')
+        assert [a.fn2] == a.get_filter()
+        assert [fn1] == a.element1.get_filter()
+        assert [a.fn2] == a.element2.get_filter()
+        assert [fn1, a.fn2] == a.element3.get_filter()
 
     def test_get_selector(self):
         html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
@@ -85,7 +102,7 @@ class TestElement(object):
         def fn1(value):
             return 1
 
-        class A(object):
+        class A(Content):
             element1 = Element(parser=fn1)
             element2 = Element(parser='fn2')
 

@@ -26,33 +26,26 @@ class BaseElement(object):
     def is_descriptor(self):
         return self.instance is not None
 
+    def get_function(self, fn):
+        if callable(fn):
+            return fn
+
+        method = getattr(self, six.text_type(fn), None)
+        if method and callable(method):
+            return method
+
+        if self.instance and hasattr(self.instance, 'get_function'):
+            return self.instance.get_function(fn)
+
+        raise ValueError('{} is not callable.'.format(fn))
+
     def get_filter(self):
         if not isinstance(self.filter, (list, tuple)):
             filters = [self.filter]
         else:
             filters = self.filter
 
-        if self.is_descriptor:
-            for i, filter in enumerate(filters):
-                if callable(filter):
-                    continue
-
-                func = getattr(self.instance, str(filter), None)
-                if not func:
-                    raise ValueError('{}.{} is not found.'.format(
-                        self.instance.__class__.__name__,
-                        filter,
-                    ))
-
-                if not callable(func):
-                    raise ValueError('{}.{} is not callable.'.format(
-                        self.instance.__class__.__name__,
-                        filter,
-                    ))
-
-                filters[i] = func
-
-        return filters
+        return [self.get_function(f) for f in filters]
 
     def get_selector(self, html):
         selector = Selector(text=html) if isinstance(html, str) else html
@@ -116,24 +109,7 @@ class Element(BaseElement):
         super(Element, self).__init__(*args, **kwargs)
 
     def get_parser(self):
-        if callable(self.parser):
-            return self.parser
-
-        if self.is_descriptor:
-            func = getattr(self.instance, str(self.parser), None)
-            if not func:
-                raise ValueError('{}.{} is not found.'.format(
-                    self.instance.__class__.__name__,
-                    self.parser,
-                ))
-            if not callable(func):
-                raise ValueError('{}.{} is not callable.'.format(
-                    self.instance.__class__.__name__,
-                    self.parser,
-                ))
-            return func
-
-        raise ValueError('{} is not callable.'.format(self.parser))
+        return self.get_function(self.parser)
 
     def _parse(self, selector):
         return self.get_parser()(selector)
