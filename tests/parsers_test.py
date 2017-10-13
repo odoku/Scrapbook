@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import os
 
@@ -28,13 +28,13 @@ def load_html(filepath):
 
 class TestFirst(object):
     def test_(self):
-        selector = Selector('<html><body><p>aaa<br>bbb<br>ccc</p></body></html>')
+        selector = Selector(u'<html><body><p>aaa<br>bbb<br>ccc</p></body></html>')
         assert 'aaa' == First()(selector.xpath('//html/body/p/text()'))
 
 
 class TestAll(object):
     def test_(self):
-        selector = Selector('<html><body><p>aaa<br>bbb<br>ccc</p></body></html>')
+        selector = Selector(u'<html><body><p>aaa<br>bbb<br>ccc</p></body></html>')
         assert ['aaa', 'bbb', 'ccc'] == All()(selector.xpath('//html/body/p/text()'))
 
 

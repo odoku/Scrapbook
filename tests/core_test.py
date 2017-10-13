@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 from collections import OrderedDict
 
@@ -57,7 +57,7 @@ class TestBaseElement(object):
         assert [fn1, a.fn2] == a.element3.get_filter()
 
     def test_get_selector(self):
-        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
         assert BaseElement().get_selector(html).extract() == html.xpath('.').extract()
         assert BaseElement(xpath='/p/a').get_selector(html).extract() == \
@@ -87,7 +87,7 @@ class TestContent(object):
         }
 
     def test_parse(self):
-        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -99,7 +99,7 @@ class TestContent(object):
         }
 
     def test_parse_with_mutable_mapping_instance(self):
-        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -113,7 +113,7 @@ class TestContent(object):
         assert 'http://google.com' == result['el2']
 
     def test_parse_with_mutable_mapping_class(self):
-        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -125,7 +125,7 @@ class TestContent(object):
         assert 'http://google.com' == result['el2']
 
     def test_parse_with_object(self):
-        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -144,7 +144,7 @@ class TestContent(object):
         assert 'http://google.com' == result.el2
 
     def test_inline(self):
-        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
         class A(Content):
             content = Content.inline(
@@ -178,5 +178,5 @@ class TestElement(object):
         assert a.element2.get_parser() == a.fn2
 
     def test_parse(self):
-        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
         assert Element(xpath='/html/body/p/a/text()').parse(html) == 'Link'

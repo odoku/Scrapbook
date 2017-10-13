@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, print_function
 
 import pytest
 
@@ -177,7 +177,7 @@ class TestJoin(object):
 
 class TestNormalize(object):
     def test_(self):
-        assert '12AB&%' == Normalize()('１２ＡＢ＆％')
+        assert '12AB&%' == Normalize()(u'１２ＡＢ＆％')
 
     def test_with_none(self):
         assert Normalize()(None) is None
