@@ -154,3 +154,34 @@ Map the value to the object specified in the object argument.
     instance = PageModel()
     page = Page()
     instance = page.parse(html, object=instance)
+
+
+Class Methods
+=====================================================================
+
+inline
+---------------------------------------------------------------------
+
+.. code-block:: python
+
+    inline(
+        xpath: str = None,
+        filter: Union[Callable, str, list[Union[Callable, str]] = scrapbook.filters.through,
+        **attrs: Dict[str, Any]
+    )
+
+Returns an instance of dynamically generated Content class.
+
+.. code-block:: python
+
+    class Page(Content):
+        content = Content.inline(
+            text=Element(xpath='/html/body/p/text()', filter='twice'),
+        )
+
+        def twice(self, value):
+            return value * 2
+
+    html = '<html><body><p>Hello!</p></body></html>'
+    page = Page()
+    data = page.parse(html)  # {'content': {'text': 'Hello!Hello!'}}
