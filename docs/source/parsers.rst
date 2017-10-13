@@ -3,10 +3,10 @@ Parsers
 =====================================================================
 
 
-Extract
+First
 =====================================================================
 
-It converts all elements matching xpath into text and returns it as list.
+Get only one element matching the specified xpath.
 This is the default parser of Element.
 
 .. code-block:: html
@@ -26,7 +26,35 @@ This is the default parser of Element.
 
 .. code-block:: python
 
-    el = Element(xpath='//html/body/p/text()', parser=extract)
+    el = Element(xpath='//html/body/p/text()', parser=First)
+    text = el.parse(html)
+
+    assert 'AAA' == text
+
+
+All
+=====================================================================
+
+It converts all elements matching xpath into text and returns it as list.
+
+.. code-block:: html
+
+    <html>
+        <body>
+            <p>
+                AAA
+                <br>
+                BBB
+                <br>
+                CCCC
+            </p>
+        </body>
+    </html>
+
+
+.. code-block:: python
+
+    el = Element(xpath='//html/body/p/text()', parser=All)
     texts = el.parse(html)
 
     assert ['AAA', 'BBB', 'CCC'] == texts
