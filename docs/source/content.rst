@@ -88,6 +88,7 @@ Arguments
     Content(
         xpath: Optional[str] = None,
         filter: Union[Callable, str, list[Union[Callable, str]] = scrapbook.filters.through,
+        many: bool = False,
     )
 
 xpath
@@ -121,6 +122,24 @@ As with Element, multiple filters can be specified.
 
     page = Page(xpath='//*[@id="profile"]', filter=rename)
     data = page.parse(html)
+
+many
+---------------------------------------------------------------------
+
+If there are multiple elements specified by xpath, you can get it as a list by specifying `many = True`.
+
+.. code-block:: python
+
+    class Comemnt(Content):
+        text = Element(xpath='./text()')
+
+    class Article(Content):
+        title = Element(xpath='//*[@id="title"]')
+        content = Element(xpath='//*[@id="content"]')
+        comments = Comment(xpath='//*[@id="content-list"]/li', many=True)
+
+    article = Article()
+    data = article.parse(html)
 
 
 Methods
