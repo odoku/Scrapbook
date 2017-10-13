@@ -59,9 +59,6 @@ class BaseElement(object):
             return None
 
         value = self._parse(selector)
-        if value is None:
-            return None
-
         for filter in self.get_filter():
             value = filter(value)
 
