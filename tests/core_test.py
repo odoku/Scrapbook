@@ -143,6 +143,39 @@ class TestContent(object):
         assert 'Link' == result.el1
         assert 'http://google.com' == result.el2
 
+    def test_parse_many(self):
+        html = Selector(u'<html><body><ul><li>1</li><li>2</li><li>3</li></ul></body></html>')
+
+        class A(Content):
+            value = Element(xpath='./text()')
+
+        result = A(xpath='/html/body/ul/li', many=True).parse(html)
+        assert [
+            {'value': '1'},
+            {'value': '2'},
+            {'value': '3'},
+        ] == result
+
+    def test_parse_many_with_object(self):
+        html = Selector(u'<html><body><ul><li>1</li><li>2</li><li>3</li></ul></body></html>')
+
+        class A(Content):
+            value = Element(xpath='./text()')
+
+        class Obj(object):
+            def __init__(self):
+                self.value = None
+
+        result = A(xpath='/html/body/ul/li', many=True).parse(html, object=Obj)
+        assert isinstance(result, list)
+        assert 3 == len(result)
+        assert isinstance(result[0], Obj)
+        assert '1' == result[0].value
+        assert isinstance(result[1], Obj)
+        assert '2' == result[1].value
+        assert isinstance(result[2], Obj)
+        assert '3' == result[2].value
+
     def test_inline(self):
         html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
 
