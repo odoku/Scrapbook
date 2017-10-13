@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+from collections import OrderedDict
+
 from parsel import Selector
 
 from scrapbook import (
@@ -95,6 +97,51 @@ class TestContent(object):
             'el1': 'Link',
             'el2': 'http://google.com',
         }
+
+    def test_parse_with_mutable_mapping_instance(self):
+        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+
+        class A(Content):
+            el1 = Element(xpath='/html/body/p/a/text()')
+            el2 = Element(xpath='/html/body/p/a/@href')
+
+        obj = OrderedDict()
+
+        result = A().parse(html, object=obj)
+        assert isinstance(result, OrderedDict)
+        assert 'Link' == result['el1']
+        assert 'http://google.com' == result['el2']
+
+    def test_parse_with_mutable_mapping_class(self):
+        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+
+        class A(Content):
+            el1 = Element(xpath='/html/body/p/a/text()')
+            el2 = Element(xpath='/html/body/p/a/@href')
+
+        result = A().parse(html, object=OrderedDict)
+        assert isinstance(result, OrderedDict)
+        assert 'Link' == result['el1']
+        assert 'http://google.com' == result['el2']
+
+    def test_parse_with_object(self):
+        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+
+        class A(Content):
+            el1 = Element(xpath='/html/body/p/a/text()')
+            el2 = Element(xpath='/html/body/p/a/@href')
+
+        class Obj(object):
+            def __init__(self):
+                self.el1 = None
+                self.el2 = None
+
+        obj = Obj()
+
+        result = A().parse(html, object=obj)
+        assert isinstance(result, Obj)
+        assert 'Link' == result.el1
+        assert 'http://google.com' == result.el2
 
 
 class TestElement(object):

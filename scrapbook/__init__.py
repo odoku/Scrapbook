@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function, unicode_literals
 
+from collections import Iterable, MutableMapping
+import inspect
 import six
 from parsel import Selector
 
@@ -94,6 +96,23 @@ class Content(BaseElement):
             name: getattr(self, name).parse(selector)
             for name in self.fields
         }
+
+    def parse(self, html, object=None):
+        data = super(Content, self).parse(html)
+        if object is None:
+            return data
+
+        if inspect.isclass(object):
+            object = object()
+
+        if isinstance(object, MutableMapping):
+            for key, value in data.items():
+                object[key] = value
+            return object
+
+        for key, value in data.items():
+            setattr(object, key, value)
+        return object
 
 
 class Element(BaseElement):
