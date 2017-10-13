@@ -7,8 +7,8 @@ from parsel import Selector
 
 from scrapbook import (
     BaseElement,
-    Element,
     Content,
+    Element,
 )
 
 
@@ -142,6 +142,23 @@ class TestContent(object):
         assert isinstance(result, Obj)
         assert 'Link' == result.el1
         assert 'http://google.com' == result.el2
+
+    def test_inline(self):
+        html = Selector('<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+
+        class A(Content):
+            content = Content.inline(
+                el1=Element(xpath='/html/body/p/a/text()', filter='twice')
+            )
+            el2 = Element(xpath='/html/body/p/a/@href')
+
+            def twice(self, value):
+                return value * 2
+
+        assert A().parse(html) == {
+            'content': {'el1': 'LinkLink'},
+            'el2': 'http://google.com',
+        }
 
 
 class TestElement(object):

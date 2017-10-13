@@ -114,6 +114,11 @@ class Content(BaseElement):
             setattr(object, key, value)
         return object
 
+    @classmethod
+    def inline(base, xpath=None, filter=None, **attrs):
+        cls = type('InlineContent', (base,), attrs)
+        return cls(xpath, filter)
+
 
 class Element(BaseElement):
     parser = First()
