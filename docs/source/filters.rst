@@ -193,7 +193,7 @@ Returns the normalized string.
 
 .. code-block:: python
 
-    normalize = scrapbook.filters.normalize  # == scrapbook.filters.Normalize('NFKD')
+    normalize = Normalize()
     assert '12AB&%' == normalize('１２ＡＢ＆％')
 
 
@@ -238,3 +238,44 @@ You can execute it by specifying partial arguments to the function.
 
     partial = Partial(add, 'a', b=20)
     assert 30 == partial(10)
+
+
+DateTime
+=====================================================================
+
+Converts a Datetime String to a Datetime object.
+
+.. code-block:: python
+
+    parse_dt = DateTime()
+    assert datetime(2001, 2, 3, 4, 5, 6) == parse_dt('2001-02-03 04:05:06')
+
+You can also handle timezone.
+
+.. code-block:: python
+
+    parse_dt = DateTime()
+    result = parse_dt('2001-02-03T04:05:06+09:00')
+    assert datetime(2001, 2, 3, 4, 5, 6, 0, tzoffset(None, 3600 * 9)) == result
+
+Unnecessary information can be truncated.
+
+.. code-block:: python
+
+    parse_dt = DateTime(truncate_timezone=True)
+    result = parse_dt('2001-02-03T04:05:06+09:00')
+    assert datetime(2001, 2, 3, 4, 5, 6) == result
+
+.. code-block:: python
+
+    parse_dt = DateTime(truncate_time=True)
+    result = parse_dt('2001-02-03T04:05:06+09:00')
+    assert date(2001, 2, 3) == result
+
+You can also specify the format.
+
+.. code-block:: python
+
+    parse_dt = DateTime(format='%d %m %Y')
+    result = parse_dt('01 02 2003')
+    assert datetime(2003, 2, 1) == result

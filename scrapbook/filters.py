@@ -2,14 +2,16 @@
 from __future__ import absolute_import, print_function
 
 from collections import Iterable, Mapping
+from datetime import datetime
 import functools
 import re
 import unicodedata
 
+from dateutil.parser import parse as parse_date_string
 import six
 from six.moves.html_parser import HTMLParser
 
-from .utils import remove_tags
+from .utils import remove_tags, tzinfos
 
 
 class Filter(object):
@@ -228,6 +230,33 @@ class Partial(Filter):
         if self.value_arg_name:
             return self.fn(**{self.value_arg_name: value})
         return self.fn(value)
+
+
+class DateTime(Filter):
+    def __init__(self, format=None, timezone=None, truncate_time=False, truncate_timezone=False):
+        self.format = format
+        self.timezone = timezone
+        self.truncate_time = truncate_time
+        self.truncate_timezone = truncate_timezone
+
+    def __call__(self, value):
+        if value is None:
+            return None
+
+        if self.format:
+            dt = datetime.strptime(value, self.format)
+            if self.timezone:
+                dt = dt.replace(tzinfo=self.timezone)
+        else:
+            dt = parse_date_string(value, default=datetime(1, 1, 1), tzinfos=tzinfos)
+
+        if self.truncate_timezone:
+            dt = dt.replace(tzinfo=None)
+
+        if self.truncate_time:
+            return dt.date()
+
+        return dt
 
 
 through = Through()

@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+from datetime import date, datetime
+
+from dateutil.tz import tzoffset
 import pytest
 
 from scrapbook import Content, Element
 from scrapbook.filters import (
     CleanText,
     Contains,
+    DateTime,
     Equals,
     Fetch,
     FilterDict,
@@ -274,3 +278,32 @@ class TestPartial(object):
             return a + b + c
         result = Partial(add, 'b', a=10, c=30)(20)
         assert 60 == result
+
+
+class TestDateTime(object):
+    @pytest.mark.parametrize(['value', 'result'], [
+        ('2001', datetime(2001, 1, 1)),
+        ('2001-02', datetime(2001, 2, 1)),
+        ('2001-02-03', datetime(2001, 2, 3)),
+        ('2001-02-03 04:05:06', datetime(2001, 2, 3, 4, 5, 6)),
+        ('2001-02-03T04:05:06+09:00', datetime(2001, 2, 3, 4, 5, 6, 0, tzoffset(None, 3600 * 9))),
+    ])
+    def test_(self, value, result):
+        dt = DateTime()(value)
+        assert dt == result
+
+    @pytest.mark.parametrize(['value', 'format', 'result'], [
+        ('2001', '%Y', datetime(2001, 1, 1)),
+        ('02 2001', '%m %Y', datetime(2001, 2, 1)),
+    ])
+    def test_with_format(self, value, format, result):
+        dt = DateTime(format=format)(value)
+        assert dt == result
+
+    def test_with_truncate_time(self):
+        dt = DateTime(truncate_time=True)('2001-02-03 04:05:06')
+        assert dt == date(2001, 2, 3)
+
+    def test_with_truncate_timezone(self):
+        dt = DateTime(truncate_timezone=True)('2001-02-03T04:05:06+09:00')
+        assert dt.tzinfo is None
