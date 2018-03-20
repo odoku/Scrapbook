@@ -79,12 +79,20 @@ class TakeFirst(Filter):
 
 
 class CleanText(Filter):
+    def __init__(self, empty_value=None, remove_line_breaks=False):
+        self.empty_value = empty_value
+        self.remove_line_breaks = remove_line_breaks
+
     def __call__(self, value):
-        if value:
-            value = remove_tags(value)
-            value = HTMLParser().unescape(value)
-            value = re.sub(r'[ 　]+', ' ', value)
-            value = value.strip()
+        if not value:
+            return self.empty_value
+
+        value = remove_tags(value)
+        value = HTMLParser().unescape(value)
+        if self.remove_line_breaks:
+            value = re.sub(r'(?:\n\r|\r\n|\n|\r)+', ' ', value)
+        value = re.sub(r'[ 　]+', ' ', value)
+        value = value.strip()
         return value
 
 

@@ -5,7 +5,7 @@ import pytest
 
 from scrapbook import Content, Element
 from scrapbook.filters import (
-    clean_text,
+    CleanText,
     Contains,
     Equals,
     Fetch,
@@ -123,10 +123,24 @@ class TestCleanText(object):
         ('&amp;', '&'),
         ('aa       bb', 'aa bb'),
         ('<p>  aaa  &amp;  bbb  </p>', 'aaa & bbb'),
+        ('a\nb', 'a\nb'),
+        ('', None),
         (None, None),
     ])
     def test_(self, text, result):
-        assert result == clean_text(text)
+        assert result == CleanText()(text)
+
+    def test_with_empty_value(self):
+        assert 'empty' == CleanText(empty_value='empty')('')
+
+    @pytest.mark.parametrize(['text', 'result'], [
+        ('a\nb', 'a b'),
+        ('a\rb', 'a b'),
+        ('a\n\rb', 'a b'),
+        ('a\r\nb', 'a b'),
+    ])
+    def test_with_remove_line_breaks(self, text, result):
+        assert result == CleanText(remove_line_breaks=True)(text)
 
 
 class TestEquals(object):
