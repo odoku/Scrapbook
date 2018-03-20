@@ -224,3 +224,17 @@ Other than the specified key can be returned.
 
     filter_dict = FilterDict(['AAA', 'BBB'], ignore=True)
     assert {'CCC': 30} == filter_dict({'AAA': 10, 'BBB': 20, 'CCC': 30})
+
+
+Partial
+=====================================================================
+
+You can execute it by specifying partial arguments to the function.
+
+.. code-block:: python
+
+    def add(a, b):
+        return a + b
+
+    partial = Partial(add, 'a', b=20)
+    assert 30 == partial(10)

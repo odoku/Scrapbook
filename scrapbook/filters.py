@@ -2,6 +2,7 @@
 from __future__ import absolute_import, print_function
 
 from collections import Iterable, Mapping
+import functools
 import re
 import unicodedata
 
@@ -213,6 +214,20 @@ class FilterDict(Filter):
             for key in self.keys
             if key in value
         }
+
+
+class Partial(Filter):
+    def __init__(self, fn, value_arg_name=None, **kwargs):
+        self.fn = functools.partial(fn, **kwargs)
+        self.value_arg_name = value_arg_name
+
+    def __call__(self, value):
+        if value is None:
+            return None
+
+        if self.value_arg_name:
+            return self.fn(**{self.value_arg_name: value})
+        return self.fn(value)
 
 
 through = Through()

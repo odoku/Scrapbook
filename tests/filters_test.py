@@ -13,6 +13,7 @@ from scrapbook.filters import (
     Join,
     Map,
     Normalize,
+    Partial,
     RenameKey,
     Replace,
     take_first,
@@ -259,3 +260,17 @@ class TestFilterDict(object):
         keys = ['AAA']
         result = FilterDict(keys)(None)
         assert result is None
+
+
+class TestPartial(object):
+    def test_(self):
+        def add(a, b):
+            return a + b
+        result = Partial(add, b=10)(5)
+        assert 15 == result
+
+    def test_with_value_arg_name(self):
+        def add(a, b, c):
+            return a + b + c
+        result = Partial(add, 'b', a=10, c=30)(20)
+        assert 60 == result
