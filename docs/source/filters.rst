@@ -186,6 +186,17 @@ Returns a string formed by combining list with separator.
     assert 'A,B,C' == join(['A', 'B', 'C'])
 
 
+Split
+=====================================================================
+
+Split a string into a list.
+
+.. code-block:: python
+
+    split = Split(',')
+    assert ['A', 'B', 'C'] == split('A,B,C')
+
+
 Normalize
 =====================================================================
 

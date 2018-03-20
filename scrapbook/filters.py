@@ -175,6 +175,16 @@ class Join(Filter):
         return self.separator.join(value)
 
 
+class Split(Filter):
+    def __init__(self, delimiter):
+        self.delimiter = delimiter
+
+    def __call__(self, value):
+        if value is None:
+            return []
+        return value.split(self.delimiter)
+
+
 class Normalize(Filter):
     def __init__(self, form='NFKD'):
         self.form = form
