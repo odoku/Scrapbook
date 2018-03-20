@@ -64,8 +64,8 @@ class TestMap(object):
 
         result = Map(fn1, fn2)(None)
 
-        fn1.assert_has_calls([mocker.call(None)], any_order=True)
-        fn2.assert_has_calls([mocker.call(None)], any_order=True)
+        fn1.assert_not_called()
+        fn2.assert_not_called()
         assert result is None
 
     def test_on_element(self, mocker):
