@@ -249,18 +249,19 @@ class FilterDict(Filter):
 
 
 class Partial(Filter):
-    def __init__(self, fn, value_arg_name=None, **kwargs):
-        empty_value = kwargs.pop('empty_value', None)
-        self.fn = functools.partial(fn, **kwargs)
-        self.value_arg_name = value_arg_name
-        super(Partial, self).__init__(empty_value=empty_value)
+    def __init__(self, fn, args=None, kwargs=None, arg_name=None, **parent_kwargs):
+        args = args or tuple()
+        kwargs = kwargs or {}
+        self.fn = functools.partial(fn, *args, **kwargs)
+        self.arg_name = arg_name
+        super(Partial, self).__init__(**parent_kwargs)
 
     def __call__(self, value):
         if self.is_empty(value):
             return self.empty_value
 
-        if self.value_arg_name:
-            return self.fn(**{self.value_arg_name: value})
+        if self.arg_name:
+            return self.fn(**{self.arg_name: value})
         return self.fn(value)
 
 
