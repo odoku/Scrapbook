@@ -244,11 +244,18 @@ You can execute it by specifying partial arguments to the function.
 
 .. code-block:: python
 
-    def add(a, b):
-        return a + b
+    def add(a, b, c):
+        return a + b + c
 
-    partial = Partial(add, 'a', b=20)
-    assert 30 == partial(10)
+    result = Partial(add, kwargs={'a': 10, 'c': 30}, arg_name='b')(20)
+    assert 60 == result
+
+The Partial filter handles empty values ​​safely, so it is convenient to use it as a wrapper for functions.
+
+.. code-block:: python
+
+    assert Partial(int)('') is None
+    assert Partial(int)('10') == 10
 
 
 DateTime

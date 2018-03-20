@@ -268,16 +268,22 @@ class TestFilterDict(object):
 
 
 class TestPartial(object):
-    def test_(self):
-        def add(a, b):
-            return a + b
-        result = Partial(add, b=10)(5)
-        assert 15 == result
-
-    def test_with_value_arg_name(self):
+    def test_with_args(self):
         def add(a, b, c):
             return a + b + c
-        result = Partial(add, 'b', a=10, c=30)(20)
+        result = Partial(add, args=(10, 20))(30)
+        assert 60 == result
+
+    def test_with_kwargs(self):
+        def add(a, b):
+            return a + b
+        result = Partial(add, kwargs={'b': 10})(5)
+        assert 15 == result
+
+    def test_with_arg_name(self):
+        def add(a, b, c):
+            return a + b + c
+        result = Partial(add, kwargs={'a': 10, 'c': 30}, arg_name='b')(20)
         assert 60 == result
 
 
