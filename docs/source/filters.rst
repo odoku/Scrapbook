@@ -99,7 +99,22 @@ Perform the following cleaning process on the character string.
 
 .. code-block:: python
 
+    clean_text = CleanText()
     assert 'aaa & bbb' == clean_text('<p>  aaa  &amp;  bbb  </p>')
+
+You can specify how to handle empty values.
+
+.. code-block:: python
+
+    clean_text = CleanText(empty_value='empty')
+    assert 'empty' == clean_text('')
+
+You can also replace the line feed code with a space.
+
+.. code-block:: python
+
+    clean_text = CleanText(remove_line_breaks=True)
+    assert 'a b' == clean_text('a\nb')
 
 
 Equals
