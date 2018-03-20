@@ -87,7 +87,7 @@ class TestContent(object):
         }
 
     def test_parse(self):
-        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = u'<html><body><p><a href="http://google.com">Link</a></p></body></html>'
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -99,7 +99,7 @@ class TestContent(object):
         }
 
     def test_parse_with_mutable_mapping_instance(self):
-        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = u'<html><body><p><a href="http://google.com">Link</a></p></body></html>'
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -113,7 +113,7 @@ class TestContent(object):
         assert 'http://google.com' == result['el2']
 
     def test_parse_with_mutable_mapping_class(self):
-        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = u'<html><body><p><a href="http://google.com">Link</a></p></body></html>'
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -125,7 +125,7 @@ class TestContent(object):
         assert 'http://google.com' == result['el2']
 
     def test_parse_with_object(self):
-        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = u'<html><body><p><a href="http://google.com">Link</a></p></body></html>'
 
         class A(Content):
             el1 = Element(xpath='/html/body/p/a/text()')
@@ -144,7 +144,7 @@ class TestContent(object):
         assert 'http://google.com' == result.el2
 
     def test_parse_many(self):
-        html = Selector(u'<html><body><ul><li>1</li><li>2</li><li>3</li></ul></body></html>')
+        html = u'<html><body><ul><li>1</li><li>2</li><li>3</li></ul></body></html>'
 
         class A(Content):
             value = Element(xpath='./text()')
@@ -157,7 +157,7 @@ class TestContent(object):
         ] == result
 
     def test_parse_many_with_object(self):
-        html = Selector(u'<html><body><ul><li>1</li><li>2</li><li>3</li></ul></body></html>')
+        html = u'<html><body><ul><li>1</li><li>2</li><li>3</li></ul></body></html>'
 
         class A(Content):
             value = Element(xpath='./text()')
@@ -177,7 +177,7 @@ class TestContent(object):
         assert '3' == result[2].value
 
     def test_inline(self):
-        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = u'<html><body><p><a href="http://google.com">Link</a></p></body></html>'
 
         class A(Content):
             content = Content.inline(
@@ -211,5 +211,5 @@ class TestElement(object):
         assert a.element2.get_parser() == a.fn2
 
     def test_parse(self):
-        html = Selector(u'<html><body><p><a href="http://google.com">Link</a></p></body></html>')
+        html = u'<html><body><p><a href="http://google.com">Link</a></p></body></html>'
         assert Element(xpath='/html/body/p/a/text()').parse(html) == 'Link'

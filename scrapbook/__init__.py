@@ -54,7 +54,7 @@ class BaseElement(object):
         return [self.get_function(f) for f in filters]
 
     def get_selector(self, html):
-        selector = Selector(text=html) if isinstance(html, str) else html
+        selector = Selector(text=html) if isinstance(html, six.string_types) else html
         if self.xpath:
             return selector.xpath(self.xpath)
         return selector.xpath('.')
