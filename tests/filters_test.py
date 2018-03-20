@@ -71,7 +71,7 @@ class TestMap(object):
         fn2 = mocker.patch.object(target=El, attribute='fn2', side_effect=lambda v: v * 3)
 
         element = El(xpath='//p/text()', parser=All(), filter=Map(fn1, 'fn2'))
-        result = element.parse('<p>a</p><p>b</p>')
+        result = element.parse(u'<p>a</p><p>b</p>')
 
         fn1.assert_has_calls([mocker.call('a'), mocker.call('b')], any_order=True)
         fn2.assert_has_calls([mocker.call('aa'), mocker.call('bb'), ], any_order=True)
@@ -89,8 +89,7 @@ class TestMap(object):
         fn2 = mocker.patch.object(target=C, attribute='fn2', side_effect=lambda v: v * 3)
 
         c = C(xpath='')
-        result = c.parse('<p>a</p><p>b</p>')
-        print(result)
+        result = c.parse(u'<p>a</p><p>b</p>')
 
         fn1.assert_has_calls([mocker.call('a'), mocker.call('b')], any_order=True)
         fn2.assert_has_calls([mocker.call('aa'), mocker.call('bb'), ], any_order=True)
