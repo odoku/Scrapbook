@@ -38,6 +38,32 @@ Execute the filter specified by argument for each element of list or dict.
         'CCC': True,
     } == result
 
+It is also possible to call functions defined in the Content class.
+
+.. code-block:: python
+
+    class Page(Content):
+        links = Element(xpath='//a/@href', parser=All(), filter=Map('filter_link'))
+
+        def filter_link(self, value):
+            url = urlparse(value)
+            return url.netloc
+
+    page = Page(xpath='')
+    result = page.parse('''
+        <a href="http://google.com">Google</a>
+        <a href="http://twitter.com">Twitter</a>
+        <a href="http://facebook.com">Facebook</a>
+    ''')
+
+    assert {
+        'links': [
+            'google.com',
+            'twitter.com',
+            'facebook.com',
+        ]
+    } == result
+
 
 Through
 =====================================================================

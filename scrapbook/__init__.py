@@ -6,7 +6,7 @@ import inspect
 import six
 from parsel import Selector
 
-from .filters import through
+from .filters import Filter, through
 from .parsers import First
 from .utils import merge_dict
 
@@ -29,6 +29,10 @@ class BaseElement(object):
         return self.instance is not None
 
     def get_function(self, fn):
+        if isinstance(fn, Filter):
+            fn.element = self
+            return fn
+
         if callable(fn):
             return fn
 

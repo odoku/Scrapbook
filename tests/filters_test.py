@@ -3,6 +3,7 @@ from __future__ import absolute_import, print_function
 
 import pytest
 
+from scrapbook import Content, Element
 from scrapbook.filters import (
     clean_text,
     Contains,
@@ -17,6 +18,7 @@ from scrapbook.filters import (
     take_first,
     through,
 )
+from scrapbook.parsers import All
 
 
 class TestMap(object):
@@ -59,6 +61,40 @@ class TestMap(object):
         fn1.assert_has_calls([mocker.call(None)], any_order=True)
         fn2.assert_has_calls([mocker.call(None)], any_order=True)
         assert result is None
+
+    def test_on_element(self, mocker):
+        class El(Element):
+            def fn2(self, value):
+                pass
+
+        fn1 = mocker.Mock(name='fn1', side_effect=lambda v: v * 2)
+        fn2 = mocker.patch.object(target=El, attribute='fn2', side_effect=lambda v: v * 3)
+
+        element = El(xpath='//p/text()', parser=All(), filter=Map(fn1, 'fn2'))
+        result = element.parse('<p>a</p><p>b</p>')
+
+        fn1.assert_has_calls([mocker.call('a'), mocker.call('b')], any_order=True)
+        fn2.assert_has_calls([mocker.call('aa'), mocker.call('bb'), ], any_order=True)
+        assert ['aaaaaa', 'bbbbbb'] == result
+
+    def test_on_content(self, mocker):
+        fn1 = mocker.Mock(name='fn1', side_effect=lambda v: v * 2)
+
+        class C(Content):
+            field = Element(xpath='//p/text()', parser=All(), filter=Map(fn1, 'fn2'))
+
+            def fn2(self, value):
+                pass
+
+        fn2 = mocker.patch.object(target=C, attribute='fn2', side_effect=lambda v: v * 3)
+
+        c = C(xpath='')
+        result = c.parse('<p>a</p><p>b</p>')
+        print(result)
+
+        fn1.assert_has_calls([mocker.call('a'), mocker.call('b')], any_order=True)
+        fn2.assert_has_calls([mocker.call('aa'), mocker.call('bb'), ], any_order=True)
+        assert ['aaaaaa', 'bbbbbb'] == result['field']
 
 
 class TestThrough(object):

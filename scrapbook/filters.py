@@ -11,9 +11,18 @@ from six.moves.html_parser import HTMLParser
 from .utils import remove_tags
 
 
-class Map(object):
+class Filter(object):
+    def __init__(self):
+        self.element = None
+
+    def __call__(self, values):
+        raise NotImplementedError()
+
+
+class Map(Filter):
     def __init__(self, *functions):
-        self.functions = functions
+        self._functions = functions
+        super(Map, self).__init__()
 
     def __call__(self, values):
         if isinstance(values, Mapping):
@@ -25,32 +34,40 @@ class Map(object):
         return self._run_other(values)
 
     def _run_mapping(self, mapping):
+        functions = self._get_functions()
         return {
-            k: six.moves.reduce(lambda vv, f: f(vv), self.functions, v)
+            k: six.moves.reduce(lambda vv, f: f(vv), functions, v)
             for k, v in mapping.items()
         }
 
     def _run_iterable(self, iterable):
+        functions = self._get_functions()
         return list(six.moves.reduce(
             lambda v, f: map(f, v),
-            self.functions,
+            functions,
             iterable,
         ))
 
     def _run_other(self, value):
+        functions = self._get_functions()
         return six.moves.reduce(
             lambda v, f: f(v),
-            self.functions,
+            functions,
             value,
         )
 
+    def _get_functions(self):
+        if not self.element:
+            return self._functions
+        return [self.element.get_function(fn) for fn in self._functions]
 
-class Through(object):
+
+class Through(Filter):
     def __call__(self, value):
         return value
 
 
-class TakeFirst(object):
+class TakeFirst(Filter):
     def __call__(self, values):
         if values is None:
             return None
@@ -61,7 +78,7 @@ class TakeFirst(object):
         return None
 
 
-class CleanText(object):
+class CleanText(Filter):
     def __call__(self, value):
         if value:
             value = remove_tags(value)
@@ -71,7 +88,7 @@ class CleanText(object):
         return value
 
 
-class Equals(object):
+class Equals(Filter):
     def __init__(self, value):
         self.value = value
 
@@ -79,7 +96,7 @@ class Equals(object):
         return self.value == value
 
 
-class Contains(object):
+class Contains(Filter):
     def __init__(self, value):
         self.value = value
 
@@ -89,7 +106,7 @@ class Contains(object):
         return self.value in value
 
 
-class Fetch(object):
+class Fetch(Filter):
     def __init__(self, pattern, all=False):
         self.pattern = re.compile(pattern)
         self.all = all
@@ -126,7 +143,7 @@ class Fetch(object):
         return match.group(0)
 
 
-class Replace(object):
+class Replace(Filter):
     def __init__(self, pattern, replace):
         self.pattern = re.compile(pattern)
         self.replace = replace
@@ -137,7 +154,7 @@ class Replace(object):
         return self.pattern.sub(self.replace, value)
 
 
-class Join(object):
+class Join(Filter):
     def __init__(self, separator=''):
         self.separator = separator
 
@@ -147,7 +164,7 @@ class Join(object):
         return self.separator.join(value)
 
 
-class Normalize(object):
+class Normalize(Filter):
     def __init__(self, form='NFKD'):
         self.form = form
 
@@ -157,7 +174,7 @@ class Normalize(object):
         return unicodedata.normalize(self.form, value)
 
 
-class RenameKey(object):
+class RenameKey(Filter):
     def __init__(self, name_map):
         self.name_map = name_map
 
@@ -167,7 +184,7 @@ class RenameKey(object):
         return {self.name_map.get(k, k): v for k, v in value.items()}
 
 
-class FilterDict(object):
+class FilterDict(Filter):
     def __init__(self, keys, ignore=False):
         self.keys = keys
         self.ignore = ignore
