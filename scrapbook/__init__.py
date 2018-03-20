@@ -6,7 +6,7 @@ import inspect
 import six
 from parsel import Selector
 
-from .filters import Filter, through
+from .filters import clean_text, Filter, through
 from .parsers import First
 from .utils import merge_dict
 
@@ -135,6 +135,7 @@ class Content(BaseElement):
 
 
 class Element(BaseElement):
+    filter = (clean_text,)
     parser = First()
 
     def __init__(self, *args, **kwargs):
