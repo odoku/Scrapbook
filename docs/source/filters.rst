@@ -290,3 +290,21 @@ You can also specify the format.
     parse_dt = DateTime(format='%d %m %Y')
     result = parse_dt('01 02 2003')
     assert datetime(2003, 2, 1) == result
+
+
+Bool
+=====================================================================
+
+Convert string to Bool type.
+
+.. code-block:: python
+
+    parse_bool_string = Bool()
+    assert parse_bool_string('true')
+
+You can specify a string to treat as True.
+
+.. code-block:: python
+
+    parse_bool_string = Bool('OK', 'ok')
+    assert parse_bool_string('OK')

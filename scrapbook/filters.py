@@ -269,6 +269,16 @@ class DateTime(Filter):
         return dt
 
 
+class Bool(Filter):
+    def __init__(self, *true_values):
+        self.true_values = true_values or ['true', 'True', 'TRUE', 'yes', 'Yes', 'YES', '1']
+
+    def __call__(self, value):
+        if value is None:
+            return None
+        return value in self.true_values
+
+
 through = Through()
 take_first = TakeFirst()
 clean_text = CleanText()

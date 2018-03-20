@@ -8,6 +8,7 @@ import pytest
 
 from scrapbook import Content, Element
 from scrapbook.filters import (
+    Bool,
     CleanText,
     Contains,
     DateTime,
@@ -307,3 +308,21 @@ class TestDateTime(object):
     def test_with_truncate_timezone(self):
         dt = DateTime(truncate_timezone=True)('2001-02-03T04:05:06+09:00')
         assert dt.tzinfo is None
+
+
+class TestBool(object):
+    @pytest.mark.parametrize(['value', 'result'], [
+        ('true', True),
+        ('false', False),
+    ])
+    def test_(self, value, result):
+        assert result == Bool()(value)
+
+    @pytest.mark.parametrize(['value', 'result'], [
+        ('OK', True),
+        ('ok', True),
+        ('true', False),
+        ('ng', False),
+    ])
+    def test_with_true_values(self, value, result):
+        assert result == Bool('OK', 'ok')(value)
