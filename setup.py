@@ -17,6 +17,7 @@ setup(
     install_requires=[
         'parsel>=1.2.0',
         'six>=1.10.0',
+        'python-dateutil>=2.7.0',
     ],
     extras_require={
         'test': [

@@ -1,18 +1,24 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+from datetime import date, datetime
+
+from dateutil.tz import tzoffset
 import pytest
 
 from scrapbook import Content, Element
 from scrapbook.filters import (
-    clean_text,
+    Bool,
+    CleanText,
     Contains,
+    DateTime,
     Equals,
     Fetch,
     FilterDict,
     Join,
     Map,
     Normalize,
+    Partial,
     RenameKey,
     Replace,
     take_first,
@@ -58,8 +64,8 @@ class TestMap(object):
 
         result = Map(fn1, fn2)(None)
 
-        fn1.assert_has_calls([mocker.call(None)], any_order=True)
-        fn2.assert_has_calls([mocker.call(None)], any_order=True)
+        fn1.assert_not_called()
+        fn2.assert_not_called()
         assert result is None
 
     def test_on_element(self, mocker):
@@ -123,10 +129,24 @@ class TestCleanText(object):
         ('&amp;', '&'),
         ('aa       bb', 'aa bb'),
         ('<p>  aaa  &amp;  bbb  </p>', 'aaa & bbb'),
+        ('a\nb', 'a\nb'),
+        ('', None),
         (None, None),
     ])
     def test_(self, text, result):
-        assert result == clean_text(text)
+        assert result == CleanText()(text)
+
+    def test_with_empty_value(self):
+        assert 'empty' == CleanText(empty_value='empty')('')
+
+    @pytest.mark.parametrize(['text', 'result'], [
+        ('a\nb', 'a b'),
+        ('a\rb', 'a b'),
+        ('a\n\rb', 'a b'),
+        ('a\r\nb', 'a b'),
+    ])
+    def test_with_remove_line_breaks(self, text, result):
+        assert result == CleanText(remove_line_breaks=True)(text)
 
 
 class TestEquals(object):
@@ -245,3 +265,64 @@ class TestFilterDict(object):
         keys = ['AAA']
         result = FilterDict(keys)(None)
         assert result is None
+
+
+class TestPartial(object):
+    def test_(self):
+        def add(a, b):
+            return a + b
+        result = Partial(add, b=10)(5)
+        assert 15 == result
+
+    def test_with_value_arg_name(self):
+        def add(a, b, c):
+            return a + b + c
+        result = Partial(add, 'b', a=10, c=30)(20)
+        assert 60 == result
+
+
+class TestDateTime(object):
+    @pytest.mark.parametrize(['value', 'result'], [
+        ('2001', datetime(2001, 1, 1)),
+        ('2001-02', datetime(2001, 2, 1)),
+        ('2001-02-03', datetime(2001, 2, 3)),
+        ('2001-02-03 04:05:06', datetime(2001, 2, 3, 4, 5, 6)),
+        ('2001-02-03T04:05:06+09:00', datetime(2001, 2, 3, 4, 5, 6, 0, tzoffset(None, 3600 * 9))),
+    ])
+    def test_(self, value, result):
+        dt = DateTime()(value)
+        assert dt == result
+
+    @pytest.mark.parametrize(['value', 'format', 'result'], [
+        ('2001', '%Y', datetime(2001, 1, 1)),
+        ('02 2001', '%m %Y', datetime(2001, 2, 1)),
+    ])
+    def test_with_format(self, value, format, result):
+        dt = DateTime(format=format)(value)
+        assert dt == result
+
+    def test_with_truncate_time(self):
+        dt = DateTime(truncate_time=True)('2001-02-03 04:05:06')
+        assert dt == date(2001, 2, 3)
+
+    def test_with_truncate_timezone(self):
+        dt = DateTime(truncate_timezone=True)('2001-02-03T04:05:06+09:00')
+        assert dt.tzinfo is None
+
+
+class TestBool(object):
+    @pytest.mark.parametrize(['value', 'result'], [
+        ('true', True),
+        ('false', False),
+    ])
+    def test_(self, value, result):
+        assert result == Bool()(value)
+
+    @pytest.mark.parametrize(['value', 'result'], [
+        ('OK', True),
+        ('ok', True),
+        ('true', False),
+        ('ng', False),
+    ])
+    def test_with_true_values(self, value, result):
+        assert result == Bool('OK', 'ok')(value)
