@@ -6,6 +6,7 @@ import inspect
 import six
 from parsel import Selector
 
+from .exceptions import ScrapBookError
 from .filters import clean_text, Filter, through
 from .parsers import First
 from .utils import merge_dict
@@ -89,10 +90,13 @@ class Content(BaseElement):
         super(Content, self).__init__(*args, **kwargs)
 
     def _parse(self, selector):
-        return {
-            name: getattr(self, name).parse(selector)
-            for name in self.elements
-        }
+        data = {}
+        for name in self.elements:
+            try:
+                data[name] = getattr(self, name).parse(selector)
+            except Exception as e:
+                raise ScrapBookError(parent=e, field=name)
+        return data
 
     def parse(self, html, object=None):
         selector = self.get_selector(html)
@@ -105,17 +109,22 @@ class Content(BaseElement):
             value = self._parse(selector)
 
         for filter in self.get_filter():
-            value = filter(value)
+            try:
+                value = filter(value)
+            except Exception as e:
+                raise ScrapBookError(parent=e, selector=selector, value=value)
 
+        return self._map_to(value, object)
+
+    def _map_to(self, value, object):
         if object is None:
             return value
 
         if isinstance(value, (list, tuple)):
-            return [self.map_value(v, object) for v in value]
+            return [self._map_value(v, object) for v in value]
+        return self._map_value(value, object)
 
-        return self.map_value(value, object)
-
-    def map_value(self, value, object):
+    def _map_value(self, value, object):
         if inspect.isclass(object):
             object = object()
 
@@ -155,8 +164,12 @@ class Element(BaseElement):
         if len(selector) == 0:
             return None
 
-        value = self._parse(selector)
-        for filter in self.get_filter():
-            value = filter(value)
+        value = None
+        try:
+            value = self._parse(selector)
+            for filter in self.get_filter():
+                value = filter(value)
+        except Exception as e:
+            raise ScrapBookError(parent=e, selector=selector, value=value)
 
         return value
