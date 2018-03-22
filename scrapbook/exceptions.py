@@ -1,7 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, print_function
 
+import sys
+import traceback
+
 from parsel import SelectorList
+import six
+
+
+def get_traceback_string():
+    ex_type, ex, tb = sys.exc_info()
+    fp = six.StringIO()
+    traceback.print_tb(tb, file=fp)
+    fp.seek(0)
+    return fp.read()
 
 
 class ScrapBookError(Exception):
@@ -12,11 +24,17 @@ class ScrapBookError(Exception):
         self._field = field
 
         super(ScrapBookError, self).__init__(self._create_message())
-        self.with_traceback(parent.__traceback__)
+        if six.PY3:
+            self.with_traceback(parent.__traceback__)
 
     def _create_message(self):
+        if six.PY2:
+            message = get_traceback_string() + '\n'
+        else:
+            message = ''
+
         parent = self.parent
-        message = 'Raises {}: {}\nXPath: {}\nValue: {}\nField: {}'.format(
+        message += 'Raises {}: {}\nXPath: {}\nValue: {}\nField: {}'.format(
             parent.__class__.__name__, str(parent),
             self.xpath,
             self.value,

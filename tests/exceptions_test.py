@@ -83,7 +83,7 @@ class TestScrapBookError(object):
         )
 
         try:
-            content.parse('''
+            content.parse(u'''
                 <html>
                     <body>
                         <p>aaaa</p>
