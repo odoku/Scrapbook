@@ -35,7 +35,7 @@ class Map(Filter):
 
     def __call__(self, value):
         if self.is_empty(value):
-            return None
+            return self.empty_value
 
         if isinstance(value, Mapping):
             return self._run_mapping(value)
@@ -87,7 +87,7 @@ class TakeFirst(Filter):
         for v in value:
             if v is not None and v != '':
                 return v
-        return None
+        return self.empty_value
 
 
 class CleanText(Filter):
@@ -105,6 +105,10 @@ class CleanText(Filter):
             value = re.sub(r'(?:\n\r|\r\n|\n|\r)+', ' ', value)
         value = re.sub(r'[ 　]+', ' ', value)
         value = value.strip()
+
+        if value == '':
+            return self.empty_value
+
         return value
 
 
@@ -147,7 +151,7 @@ class Fetch(Filter):
     def _fetch(self, value):
         match = self.pattern.search(value)
         if not match:
-            return None
+            return self.empty_value
         return self._get_value(match)
 
     def _fetch_all(self, value):
