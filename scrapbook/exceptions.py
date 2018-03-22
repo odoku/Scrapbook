@@ -11,9 +11,7 @@ class ScrapBookError(Exception):
         self._value = value
         self._field = field
 
-        message = self._create_message()
-        super().__init__(message)
-
+        super(ScrapBookError, self).__init__(self._create_message())
         self.with_traceback(parent.__traceback__)
 
     def _create_message(self):
